@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destek ve Şikayet Sistemi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .login-section, .complaint-section, .admin-section, .my-complaints-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ffcc00;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            color: #333;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        button {
+            background: #ffcc00;
+            color: #333;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+        }
+        
+        input:focus, textarea:focus {
+            outline: 2px solid #ffcc00;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+        }
+        
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .alert-success {
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .alert-error {
+            background: #f44336;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .complaint-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .complaint-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .complaint-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .complaint-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+        }
+        
+        .player-name {
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .complaint-date {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        
+        .complaint-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .complaint-description {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .response-section {
+            margin-top: 15px;
+        }
+        
+        .response {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .response-sender {
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .response-date {
+            font-size: 0.8rem;
+            color: #ccc;
+        }
+        
+        .response-content {
+            line-height: 1.5;
+        }
+        
+        .response-form {
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .response-form textarea {
+            min-height: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .response-btn {
+            background: #4CAF50;
+            color: white;
+            margin-right: 10px;
+        }
+        
+        .response-btn:hover {
+            background: #45a049;
+        }
+        
+        .close-btn {
+            background: #ff3333;
+            color: white;
+        }
+        
+        .close-btn:hover {
+            background: #cc0000;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status.open {
+            background: #ff9900;
+            color: white;
+        }
+        
+        .status.closed {
+            background: #00cc66;
+            color: white;
+        }
+        
+        .image-preview {
+            max-width: 200px;
+            margin-top: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid #ffcc00;
+            color: #ffcc00;
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Modal Stilleri */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: #ffcc00;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .complaint-preview {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .response-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 1rem;
+            border: none;
+            resize: vertical;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .send-response {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .send-response:hover {
+            background: #45a049;
+        }
+
+        @media (max-width: 768px) {
+            .complaint-list {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Destek ve Şikayet Sistemi</h1>
+            <p>Şikayetlerinizi buradan iletebilirsiniz</p>
+        </header>
+        
+        <section class="login-section">
+            <h2>Giriş Yap</h2>
+            <div class="form-group">
+                <label for="playerName">Oyuncu İsmi</label>
+                <input type="text" id="playerName" placeholder="Oyuncu isminizi girin">
+            </div>
+            <button id="loginBtn">Giriş Yap</button>
+        </section>
+        
+        <section id="userSection" class="hidden">
+            <div class="tabs">
+                <div class="tab active" data-tab="complaint">Yeni Şikayet</div>
+                <div class="tab" data-tab="myComplaints">Şikayetlerim</div>
+                <div id="adminTab" class="tab hidden" data-tab="admin">Tüm Şikayetler</div>
+            </div>
+            
+            <div id="complaintSection" class="complaint-section">
+                <h2>Yeni Şikayet Oluştur</h2>
+                <form id="complaintForm">
+                    <div class="form-group">
+                        <label for="complaintPlayerName">Şikayet Edilen Oyuncu</label>
+                        <input type="text" id="complaintPlayerName" placeholder="Şikayet edilen oyuncunun ismi" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="complaintDescription">Şikayet Açıklaması</label>
+                        <textarea id="complaintDescription" placeholder="Şikayetinizi detaylı bir şekilde açıklayın" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="complaintImage">Resim Yükle (İsteğe Bağlı)</label>
+                        <input type="file" id="complaintImage" accept="image/*">
+                        <img id="imagePreview" class="image-preview" src="#" alt="Resim önizleme">
+                    </div>
+                    
+                    <button type="submit">Şikayeti Gönder</button>
+                </form>
+            </div>
+            
+            <div id="myComplaintsSection" class="my-complaints-section hidden">
+                <h2>Şikayetlerim</h2>
+                <div class="complaint-list" id="myComplaintList">
+                    <!-- Kullanıcının şikayetleri burada listelenecek -->
+                </div>
+            </div>
+            
+            <div id="adminSection" class="admin-section hidden">
+                <h2>Tüm Şikayetler</h2>
+                <div class="complaint-list" id="complaintList">
+                    <!-- Tüm şikayetler burada listelenecek -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Yanıt Verme Modalı -->
+        <div id="responseModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Şikayete Yanıt Ver</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="complaint-preview">
+                        <h4>Şikayet Detayları:</h4>
+                        <p><strong>Şikayet Eden:</strong> <span id="modalComplainer"></span></p>
+                        <p><strong>Şikayet Edilen:</strong> <span id="modalReported"></span></p>
+                        <p><strong>Açıklama:</strong> <span id="modalDescription"></span></p>
+                        <div id="modalImageContainer"></div>
+                    </div>
+                    <textarea class="response-textarea" id="modalResponse" placeholder="Yanıtınızı buraya yazın..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button class="close-btn" id="cancelResponse">İptal</button>
+                    <button class="send-response" id="sendResponse">Yanıtı Gönder</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Destek Sistemi &copy; 2023 | Ctrl+Enter ile hızlı gönderim</p>
+        </footer>
+    </div>
+
+    <script>
+        // Global değişkenler
+        let currentComplaintId = null;
+        let currentPlayerName = '';
+
+        // Alert fonksiyonu
+        function showAlert(message, type = 'success') {
+            const alert = document.createElement('div');
+            alert.className = `alert-${type}`;
+            alert.textContent = message;
+            
+            document.querySelector('.container').prepend(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 3000);
+        }
+
+        // Kullanıcı giriş kontrolü
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            const playerName = document.getElementById('playerName').value.trim();
+            
+            if (playerName) {
+                currentPlayerName = playerName;
+                
+                document.getElementById('userSection').classList.remove('hidden');
+                document.querySelector('.login-section').classList.add('hidden');
+                
+                // Admin kontrolü - BÜYÜK/KÜÇÜK harf duyarlılığını kaldırdım
+                if (playerName.toLowerCase() === 'alpsadece' || playerName.toLowerCase() === 'egemn16') {
+                    document.getElementById('adminTab').classList.remove('hidden');
+                    loadComplaints();
+                }
+                
+                loadMyComplaints(playerName);
+                showAlert(`Hoş geldiniz, ${playerName}!`, 'success');
+            } else {
+                showAlert('Lütfen oyuncu isminizi girin!', 'error');
+            }
+        });
+        
+        // Tab geçişleri
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.complaint-section, .my-complaints-section, .admin-section').forEach(s => s.classList.add('hidden'));
+                
+                this.classList.add('active');
+                
+                const tabType = this.getAttribute('data-tab');
+                if (tabType === 'complaint') {
+                    document.getElementById('complaintSection').classList.remove('hidden');
+                } else if (tabType === 'myComplaints') {
+                    document.getElementById('myComplaintsSection').classList.remove('hidden');
+                    loadMyComplaints(currentPlayerName);
+                } else if (tabType === 'admin') {
+                    document.getElementById('adminSection').classList.remove('hidden');
+                    loadComplaints();
+                }
+            });
+        });
+        
+        // Resim önizleme
+        document.getElementById('complaintImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Form gönderimi
+        document.getElementById('complaintForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = 'Gönderiliyor...';
+            submitBtn.classList.add('loading');
+            
+            const complaintPlayerName = document.getElementById('complaintPlayerName').value.trim();
+            const complaintDescription = document.getElementById('complaintDescription').value.trim();
+            const complaintImage = document.getElementById('complaintImage').files[0];
+            
+            if (!complaintPlayerName || !complaintDescription) {
+                showAlert('Lütfen tüm gerekli alanları doldurun!', 'error');
+                submitBtn.innerHTML = 'Şikayeti Gönder';
+                submitBtn.classList.remove('loading');
+                return;
+            }
+            
+            setTimeout(() => {
+                saveComplaint(currentPlayerName, complaintPlayerName, complaintDescription, complaintImage);
+                
+                this.reset();
+                document.getElementById('imagePreview').style.display = 'none';
+                
+                submitBtn.innerHTML = 'Şikayeti Gönder';
+                submitBtn.classList.remove('loading');
+                
+                showAlert('Şikayetiniz başarıyla gönderildi!', 'success');
+                loadMyComplaints(currentPlayerName);
+            }, 1000);
+        });
+        
+        // Klavye kısayolu
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                const activeForm = document.querySelector('form:not(.hidden)');
+                if (activeForm) {
+                    activeForm.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        // Şikayet kaydetme
+        function saveComplaint(playerName, complaintPlayerName, description, imageFile) {
+            let complaints = JSON.parse(localStorage.getItem('complaints')) || [];
+            
+            const newComplaint = {
+                id: Date.now(),
+                playerName: playerName,
+                complaintPlayerName: complaintPlayerName,
+                description: description,
+                date: new Date().toLocaleString('tr-TR'),
+                status: 'open',
+                responses: []
+            };
+            
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newComplaint.image = e.target.result;
+                    complaints.push(newComplaint);
+                    localStorage.setItem('complaints', JSON.stringify(complaints));
+                    
+                    if (document.getElementById('adminSection').classList.contains('hidden') === false) {
+                        loadComplaints();
+                    }
+                }
+                reader.readAsDataURL(imageFile);
+            } else {
+                complaints.push(newComplaint);
+                localStorage.setItem('complaints', JSON.stringify(complaints));
+                
+                if (document.getElementById('adminSection').classList.contains('hidden') === false) {
+                    loadComplaints();
+                }
+            }
+        }
+
+        // Tüm şikayetleri yükleme (admin için)
+        function loadComplaints() {
+            const complaints = JSON.parse(localStorage.getItem('complaints')) || [];
+            const complaintList = document.getElementById('complaintList');
+            
+            complaintList.innerHTML = '';
+            
+            if (complaints.length === 0) {
+                complaintList.innerHTML = '<p>Henüz hiç şikayet bulunmamaktadır.</p>';
+                return;
+            }
+            
+            complaints.sort((a, b) => b.id - a.id);
+            
+            complaints.forEach(complaint => {
+                const complaintCard = document.createElement('div');
+                complaintCard.className = 'complaint-card';
+                
+                let imageHtml = '';
+                if (complaint.image) {
+                    imageHtml = `<img src="${complaint.image}" alt="Şikayet resmi" class="complaint-image">`;
+                }
+                
+                let responsesHtml = '';
+                if (complaint.responses && complaint.responses.length > 0) {
+                    responsesHtml = '<div class="response-section">';
+                    complaint.responses.forEach(response => {
+                        responsesHtml += `
+                            <div class="response">
+                                <div class="response-header">
+                                    <span class="response-sender">${response.sender}</span>
+                                    <span class="response-date">${response.date}</span>
+                                </div>
+                                <div class="response-content">${response.text}</div>
+                            </div>
+                        `;
+                    });
+                    responsesHtml += '</div>';
+                }
+                
+                let actionButtonsHtml = '';
+                // SADECE ADMINLER için butonları göster - BÜYÜK/KÜÇÜK harf duyarlılığını kaldırdım
+                const isAdmin = currentPlayerName.toLowerCase() === 'alpsadece' || currentPlayerName.toLowerCase() === 'egemn16';
+                
+                if (complaint.status === 'open' && isAdmin) {
+                    actionButtonsHtml = `
+                        <div style="margin-top: 15px; display: flex; gap: 10px;">
+                            <button class="response-btn" data-id="${complaint.id}">Yanıt Ver</button>
+                            <button class="close-btn" data-id="${complaint.id}">Şikayeti Kapat</button>
+                        </div>
+                    `;
+                }
+                
+                complaintCard.innerHTML = `
+                    <div class="complaint-header">
+                        <div>
+                            <span class="player-name">${complaint.playerName}</span> -> 
+                            <span class="player-name">${complaint.complaintPlayerName}</span>
+                        </div>
+                        <div>
+                            <span class="status ${complaint.status}">${complaint.status === 'open' ? 'Açık' : 'Kapalı'}</span>
+                            <div class="complaint-date">${complaint.date}</div>
+                        </div>
+                    </div>
+                    <div class="complaint-description">
+                        ${complaint.description}
+                    </div>
+                    ${imageHtml}
+                    ${responsesHtml}
+                    ${actionButtonsHtml}
+                `;
+                
+                complaintList.appendChild(complaintCard);
+            });
+            
+            // YANIT BUTONLARI - Event listener'ları doğru ekliyoruz
+            document.querySelectorAll('.response-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const complaintId = parseInt(this.getAttribute('data-id'));
+                    console.log('Yanıt butonu tıklandı:', complaintId); // Debug için
+                    openResponseModal(complaintId);
+                });
+            });
+            
+            // KAPATMA BUTONLARI
+            document.querySelectorAll('.close-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const complaintId = parseInt(this.getAttribute('data-id'));
+                    closeComplaint(complaintId);
+                });
+            });
+        }
+
+        // Kullanıcının şikayetlerini yükleme
+        function loadMyComplaints(playerName) {
+            const complaints = JSON.parse(localStorage.getItem('complaints')) || [];
+            const myComplaintList = document.getElementById('myComplaintList');
+            
+            const myComplaints = complaints.filter(c => c.playerName === playerName);
+            
+            myComplaintList.innerHTML = '';
+            
+            if (myComplaints.length === 0) {
+                myComplaintList.innerHTML = '<p>Henüz hiç şikayetiniz bulunmamaktadır.</p>';
+                return;
+            }
+            
+            myComplaints.sort((a, b) => b.id - a.id);
+            
+            myComplaints.forEach(complaint => {
+                const complaintCard = document.createElement('div');
+                complaintCard.className = 'complaint-card';
+                
+                let imageHtml = '';
+                if (complaint.image) {
+                    imageHtml = `<img src="${complaint.image}" alt="Şikayet resmi" class="complaint-image">`;
+                }
+                
+                let responsesHtml = '';
+                if (complaint.responses && complaint.responses.length > 0) {
+                    responsesHtml = '<div class="response-section">';
+                    complaint.responses.forEach(response => {
+                        responsesHtml += `
+                            <div class="response">
+                                <div class="response-header">
+                                    <span class="response-sender">${response.sender}</span>
+                                    <span class="response-date">${response.date}</span>
+                                </div>
+                                <div class="response-content">${response.text}</div>
+                            </div>
+                        `;
+                    });
+                    responsesHtml += '</div>';
+                }
+                
+                let responseFormHtml = '';
+                if (complaint.status === 'open') {
+                    responseFormHtml = `
+                        <div class="response-form">
+                            <textarea id="response-text-${complaint.id}" placeholder="Yanıtınızı buraya yazın..."></textarea>
+                            <button class="response-btn" data-id="${complaint.id}" data-inline="true">Yanıt Gönder</button>
+                        </div>
+                    `;
+                }
+                
+                complaintCard.innerHTML = `
+                    <div class="complaint-header">
+                        <div>
+                            <span class="player-name">${complaint.playerName}</span> -> 
+                            <span class="player-name">${complaint.complaintPlayerName}</span>
+                        </div>
+                        <div>
+                            <span class="status ${complaint.status}">${complaint.status === 'open' ? 'Açık' : 'Kapalı'}</span>
+                            <div class="complaint-date">${complaint.date}</div>
+                        </div>
+                    </div>
+                    <div class="complaint-description">
+                        ${complaint.description}
+                    </div>
+                    ${imageHtml}
+                    ${responsesHtml}
+                    ${responseFormHtml}
+                `;
+                
+                myComplaintList.appendChild(complaintCard);
+            });
+            
+            // Inline yanıt butonları
+            document.querySelectorAll('.response-btn[data-inline="true"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const complaintId = parseInt(this.getAttribute('data-id'));
+                    const responseText = document.getElementById(`response-text-${complaintId}`).value.trim();
+                    
+                    if (responseText) {
+                        sendResponse(complaintId, responseText);
+                        document.getElementById(`response-text-${complaintId}`).value = '';
+                    } else {
+                        showAlert('Lütfen yanıtınızı yazın!', 'error');
+                    }
+                });
+            });
+        }
+
+        // Modal açma fonksiyonu - DEBUG EKLENDİ
+        function openResponseModal(complaintId) {
+            console.log('Modal açılıyor, complaintId:', complaintId); // Debug
+            const complaints = JSON.parse(localStorage.getItem('complaints')) || [];
+            const complaint = complaints.find(c => c.id === complaintId);
+            
+            if (complaint) {
+                currentComplaintId = complaintId;
+                
+                document.getElementById('modalComplainer').textContent = complaint.playerName;
+                document.getElementById('modalReported').textContent = complaint.complaintPlayerName;
+                document.getElementById('modalDescription').textContent = complaint.description;
+                
+                const imageContainer = document.getElementById('modalImageContainer');
+                imageContainer.innerHTML = '';
+                if (complaint.image) {
+                    imageContainer.innerHTML = `<img src="${complaint.image}" alt="Şikayet resmi" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">`;
+                }
+                
+                document.getElementById('modalResponse').value = '';
+                document.getElementById('responseModal').classList.add('active');
+                
+                console.log('Modal başarıyla açıldı'); // Debug
+            } else {
+                console.error('Şikayet bulunamadı:', complaintId); // Debug
+                showAlert('Şikayet bulunamadı!', 'error');
+            }
+        }
+
+        // Modal kapatma
+        function closeModal() {
+            document.getElementById('responseModal').classList.remove('active');
+            currentComplaintId = null;
+        }
+
+        // Modal event listener'ları
+        document.querySelector('.close-modal').addEventListener('click', closeModal);
+        document.getElementById('cancelResponse').addEventListener('click', closeModal);
+
+        // ESC tuşu
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Yanıt gönderme butonu
+        document.getElementById('sendResponse').addEventListener('click', function() {
+            if (!currentComplaintId) {
+                showAlert('Lütfen önce bir şikayet seçin!', 'error');
+                return;
+            }
+            
+            const responseText = document.getElementById('modalResponse').value.trim();
+            
+            if (!responseText) {
+                showAlert('Lütfen yanıtınızı yazın!', 'error');
+                return;
+            }
+            
+            sendResponse(currentComplaintId, responseText);
+            closeModal();
+        });
+
+        // Yanıt gönderme
+        function sendResponse(complaintId, responseText) {
+            let complaints = JSON.parse(localStorage.getItem('complaints')) || [];
+            const complaintIndex = complaints.findIndex(c => c.id === complaintId);
+            
+            if (complaintIndex !== -1) {
+                const response = {
+                    sender: currentPlayerName,
+                    text: responseText,
+                    date: new Date().toLocaleString('tr-TR')
+                };
+                
+                if (!complaints[complaintIndex].responses) {
+                    complaints[complaintIndex].responses = [];
+                }
+                
+                complaints[complaintIndex].responses.push(response);
+                localStorage.setItem('complaints', JSON.stringify(complaints));
+                
+                loadComplaints();
+                loadMyComplaints(currentPlayerName);
+                
+                showAlert('Yanıtınız başarıyla gönderildi!', 'success');
+            }
+        }
+
+        // Şikayet kapatma
+        function closeComplaint(id) {
+            let complaints = JSON.parse(localStorage.getItem('complaints')) || [];
+            const complaintIndex = complaints.findIndex(c => c.id === id);
+            
+            if (complaintIndex !== -1) {
+                complaints[complaintIndex].status = 'closed';
+                localStorage.setItem('complaints', JSON.stringify(complaints));
+                loadComplaints();
+                
+                showAlert('Şikayet başarıyla kapatıldı!', 'success');
+            }
+        }
+    </script>
+</body>
+</html>
